@@ -1,6 +1,7 @@
-import { useEffect } from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { useStore } from './store/useStore'
+import { supabase } from './lib/supabase'
 import { HomePage } from './pages/HomePage'
 import { GoalsPage } from './pages/GoalsPage'
 import { HistoryPage } from './pages/HistoryPage'
@@ -10,8 +11,64 @@ import { OnboardingPage } from './pages/OnboardingPage'
 import { ReflectionPage } from './pages/ReflectionPage'
 import { StatsPage } from './pages/StatsPage'
 
+function AuthCallback() {
+  const navigate = useNavigate()
+  const { hasCompletedOnboarding } = useStore()
+  
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      navigate(hasCompletedOnboarding ? '/' : '/onboarding', { replace: true })
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [navigate, hasCompletedOnboarding])
+  
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-500 via-accent-500 to-primary-600">
+      <div className="text-white text-center">
+        <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-white/80">logging in...</p>
+      </div>
+    </div>
+  )
+}
+
 function AppRoutes() {
-  const { isAuthenticated, hasCompletedOnboarding, theme, setLoading } = useStore()
+  const { isAuthenticated, hasCompletedOnboarding, theme, setLoading, setUser } = useStore()
+  const [authReady, setAuthReady] = useState(false)
+  
+  // Listen for Supabase auth state changes
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email || '',
+          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'seeker',
+          avatar_url: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture,
+          created_at: session.user.created_at,
+        })
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null)
+      }
+      setAuthReady(true)
+    })
+    
+    // Check initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email || '',
+          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'seeker',
+          avatar_url: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture,
+          created_at: session.user.created_at,
+        })
+      }
+      setAuthReady(true)
+    })
+    
+    return () => subscription.unsubscribe()
+  }, [setUser])
   
   // Apply theme on mount and changes
   useEffect(() => {
@@ -30,7 +87,6 @@ function AppRoutes() {
     applyTheme()
     setLoading(false)
     
-    // Listen for system theme changes
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
     const handleChange = () => {
       if (theme === 'system') applyTheme()
@@ -40,11 +96,21 @@ function AppRoutes() {
     return () => mediaQuery.removeEventListener('change', handleChange)
   }, [theme, setLoading])
   
+  // Show loading while checking auth
+  if (!authReady && !isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-500 via-accent-500 to-primary-600">
+        <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+      </div>
+    )
+  }
+  
   // Not authenticated
   if (!isAuthenticated) {
     return (
       <Routes>
         <Route path="/auth" element={<AuthPage />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="*" element={<Navigate to="/auth" replace />} />
       </Routes>
     )

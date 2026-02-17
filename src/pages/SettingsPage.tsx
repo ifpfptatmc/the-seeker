@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Moon, Sun, Monitor, Palette, LogOut, Bell, Shield, HelpCircle, Brain, ChevronDown, ChevronRight, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react'
 import { Layout } from '../components/Layout'
 import { useStore } from '../store/useStore'
+import { signOut } from '../lib/supabase'
 import { getAICostSummary } from '../lib/api'
 import { isConfigured as isTodoistConfigured } from '../lib/todoist'
 import { initialSync, pullSync } from '../lib/sync'
@@ -24,7 +26,8 @@ const AI_MODELS = [
 ]
 
 export function SettingsPage() {
-  const { theme, accentColor, setTheme, setAccentColor, user, progress, preferredModel, setPreferredModel, spheres, goals, updateSphere, updateGoal, addGoal, archiveGoal } = useStore()
+  const navigate = useNavigate()
+  const { theme, accentColor, setTheme, setAccentColor, user, progress, preferredModel, setPreferredModel, spheres, goals, updateSphere, updateGoal, addGoal, archiveGoal, setUser } = useStore()
   const [showAIStats, setShowAIStats] = useState(false)
   const [aiStats, setAiStats] = useState<{ model: string; total_cost: number; total_requests: number; total_input_tokens: number; total_output_tokens: number }[]>([])
   const [isSyncing, setIsSyncing] = useState(false)
@@ -344,7 +347,14 @@ export function SettingsPage() {
         </div>
         
         {/* Sign Out */}
-        <button className="w-full btn bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 flex items-center justify-center gap-2">
+        <button 
+          onClick={async () => {
+            await signOut()
+            setUser(null)
+            navigate('/auth', { replace: true })
+          }}
+          className="w-full btn bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 flex items-center justify-center gap-2"
+        >
           <LogOut className="w-5 h-5" />
           sign out
         </button>

@@ -2,19 +2,20 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Sparkles } from 'lucide-react'
 import { useStore } from '../store/useStore'
+import { signInWithGoogle, signInWithApple } from '../lib/supabase'
 
 export function AuthPage() {
   const navigate = useNavigate()
   const { setUser, setProgress, hasCompletedOnboarding } = useStore()
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   
   const handleDemoLogin = async () => {
     setIsLoading(true)
+    setError(null)
     
-    // Simulate auth delay
-    await new Promise(r => setTimeout(r, 1000))
+    await new Promise(r => setTimeout(r, 800))
     
-    // Set demo user
     setUser({
       id: 'demo-user',
       email: 'demo@theseeker.app',
@@ -22,7 +23,6 @@ export function AuthPage() {
       created_at: new Date().toISOString()
     })
     
-    // Set initial progress
     setProgress({
       id: 'demo',
       user_id: 'demo-user',
@@ -38,7 +38,6 @@ export function AuthPage() {
     
     setIsLoading(false)
     
-    // Navigate based on onboarding status
     if (hasCompletedOnboarding) {
       navigate('/')
     } else {
@@ -47,13 +46,23 @@ export function AuthPage() {
   }
   
   const handleGoogleLogin = async () => {
-    // TODO: Implement real Google OAuth
-    handleDemoLogin()
+    setIsLoading(true)
+    setError(null)
+    const { error } = await signInWithGoogle()
+    if (error) {
+      setError(error.message)
+      setIsLoading(false)
+    }
   }
   
   const handleAppleLogin = async () => {
-    // TODO: Implement real Apple OAuth
-    handleDemoLogin()
+    setIsLoading(true)
+    setError(null)
+    const { error } = await signInWithApple()
+    if (error) {
+      setError(error.message)
+      setIsLoading(false)
+    }
   }
   
   return (
@@ -69,6 +78,13 @@ export function AuthPage() {
             weekly experiments for curious minds
           </p>
         </div>
+        
+        {/* Error */}
+        {error && (
+          <div className="mb-4 p-3 bg-red-500/20 border border-red-400/30 rounded-xl text-sm text-white text-center">
+            {error}
+          </div>
+        )}
         
         {/* Auth Buttons */}
         <div className="space-y-3">
