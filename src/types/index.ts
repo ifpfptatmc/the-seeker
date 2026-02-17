@@ -50,6 +50,10 @@ export interface Method {
   description: string;
   duration_days: number;
   tasks: MethodTask[];
+  source?: { book: string; author: string; year: number };
+  why_it_works?: string;
+  key_principles?: string[];
+  how_to_apply?: string;
 }
 
 export interface MethodTask {

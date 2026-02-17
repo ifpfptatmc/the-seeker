@@ -64,6 +64,8 @@ async function callEdgeFunction<T>(
 export async function generateDailyTasks(params: {
   method_title: string
   method_description: string
+  key_principles?: string[]
+  how_to_apply?: string
   goals: { id: string; title: string; description?: string; subtask?: { id: string; title: string } }[]
   model?: string
 }) {

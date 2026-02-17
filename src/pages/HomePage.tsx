@@ -181,6 +181,8 @@ export function HomePage() {
           const result = await generateDailyTasks({
             method_title: method.title,
             method_description: method.description,
+            key_principles: method.key_principles,
+            how_to_apply: method.how_to_apply,
             goals: goalsForAPI,
             model: preferredModel
           })
@@ -313,6 +315,8 @@ export function HomePage() {
       const result = await generateDailyTasks({
         method_title: currentMethod?.title || '',
         method_description: currentMethod?.description || '',
+        key_principles: currentMethod?.key_principles,
+        how_to_apply: currentMethod?.how_to_apply,
         goals: goalsForAPI,
         model: preferredModel
       })
