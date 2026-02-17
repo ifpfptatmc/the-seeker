@@ -149,6 +149,9 @@ export function HomePage() {
           tasks: []
         }
         setCurrentMethod(method)
+        // Method changed -- force task regeneration
+        setDailyTasks([])
+        setTasksGeneratedDate(null)
       }
       
       // Generate tasks if needed (new day or no tasks)
