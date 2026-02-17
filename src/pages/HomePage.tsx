@@ -134,9 +134,10 @@ export function HomePage() {
         })
       }
       
-      // Pick weekly method if needed
+      // Pick weekly method if needed (or reset if old method not in current list)
       let method = currentMethod
-      if (!method) {
+      const methodExists = method && TEST_METHODS.some(m => m.id === method!.id)
+      if (!method || !methodExists) {
         const weekSeed = Math.floor(baseSeed / 7)
         const methodIndex = Math.floor(seededRandom(weekSeed) * TEST_METHODS.length)
         const randomMethod = TEST_METHODS[methodIndex]
