@@ -348,8 +348,8 @@ export function SettingsPage() {
         
         {/* Sign Out */}
         <button 
-          onClick={async () => {
-            await signOut()
+          onClick={() => {
+            signOut().catch(() => {})
             setUser(null)
             navigate('/auth', { replace: true })
           }}
