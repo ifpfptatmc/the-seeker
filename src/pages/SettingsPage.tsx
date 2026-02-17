@@ -27,7 +27,7 @@ const AI_MODELS = [
 
 export function SettingsPage() {
   const navigate = useNavigate()
-  const { theme, accentColor, setTheme, setAccentColor, user, progress, preferredModel, setPreferredModel, spheres, goals, updateSphere, updateGoal, addGoal, archiveGoal, setUser } = useStore()
+  const { theme, accentColor, setTheme, setAccentColor, user, progress, preferredModel, setPreferredModel, spheres, goals, updateSphere, updateGoal, addGoal, archiveGoal, addSphere, setUser } = useStore()
   const [showAIStats, setShowAIStats] = useState(false)
   const [aiStats, setAiStats] = useState<{ model: string; total_cost: number; total_requests: number; total_input_tokens: number; total_output_tokens: number }[]>([])
   const [isSyncing, setIsSyncing] = useState(false)
@@ -55,7 +55,7 @@ export function SettingsPage() {
     setSyncError(null)
     setSyncResult(null)
     try {
-      const result = await pullSync(spheres, goals, updateSphere, updateGoal, addGoal, archiveGoal)
+      const result = await pullSync(spheres, goals, updateSphere, updateGoal, addGoal, archiveGoal, addSphere)
       setSyncResult(result)
     } catch (err) {
       setSyncError(err instanceof Error ? err.message : 'ошибка синхронизации')

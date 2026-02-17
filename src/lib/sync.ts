@@ -149,6 +149,7 @@ export async function pullSync(
   updateGoal: (id: string, updates: Partial<Goal>) => void,
   addGoal: (goal: Goal) => void,
   _archiveGoal?: (id: string) => void,
+  addSphere?: (sphere: Sphere) => void,
 ): Promise<SyncResult> {
   const result: SyncResult = {
     spheresCreated: 0, spheresUpdated: 0,
@@ -165,14 +166,35 @@ export async function pullSync(
     const sphereProjects = projects.filter(p => p.parent_id === rootProject.id && !p.is_deleted && !p.is_archived)
     
     for (const sphereProject of sphereProjects) {
-      // Find matching Seeker sphere
-      const sphere = spheres.find(s => s.todoist_id === sphereProject.id)
-      if (!sphere) continue // sphere not linked – skip (could be created in Todoist directly)
+      // Find matching Seeker sphere or create new one
+      let sphere = spheres.find(s => s.todoist_id === sphereProject.id)
+        || spheres.find(s => s.name === sphereProject.name)
       
-      // Update sphere name if changed in Todoist
-      if (sphere.name !== sphereProject.name) {
-        updateSphere(sphere.id, { name: sphereProject.name })
-        result.spheresUpdated++
+      if (!sphere) {
+        if (!addSphere) continue
+        const newSphere: Sphere = {
+          id: `sphere-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          user_id: 'demo',
+          name: sphereProject.name,
+          color: ['#ef4444','#f97316','#eab308','#22c55e','#0ea5e9','#6366f1','#a855f7','#ec4899'][result.spheresCreated % 8],
+          icon: ['🎯','💼','❤️','🧠','💰','🏋️','🎨','🌱'][result.spheresCreated % 8],
+          order: spheres.length + result.spheresCreated,
+          created_at: new Date().toISOString(),
+          todoist_id: sphereProject.id,
+        }
+        addSphere(newSphere)
+        sphere = newSphere
+        result.spheresCreated++
+      } else {
+        // Link existing sphere if todoist_id missing
+        if (!sphere.todoist_id) {
+          updateSphere(sphere.id, { todoist_id: sphereProject.id })
+        }
+        // Update sphere name if changed in Todoist
+        if (sphere.name !== sphereProject.name) {
+          updateSphere(sphere.id, { name: sphereProject.name })
+          result.spheresUpdated++
+        }
       }
       
       // Get all tasks in this project

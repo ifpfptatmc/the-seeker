@@ -48,6 +48,7 @@ export function HomePage() {
     updateGoal,
     addGoal,
     archiveGoal,
+    addSphere,
   } = useStore()
   
   // If we already have tasks for today, skip the full loading screen
@@ -112,7 +113,7 @@ export function HomePage() {
       // Pull from Todoist in background (don't block UI)
       if (isTodoistConfigured()) {
         setIsSyncing(true)
-        pullSync(spheres, goals, updateSphere, updateGoal, addGoal, archiveGoal)
+        pullSync(spheres, goals, updateSphere, updateGoal, addGoal, archiveGoal, addSphere)
           .catch(() => {})
           .finally(() => setIsSyncing(false))
       }

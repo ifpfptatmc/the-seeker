@@ -56,7 +56,7 @@ export function GoalsPage() {
     if (!isTodoistConfigured() || isSyncing) return
     setIsSyncing(true)
     try {
-      await pullSync(spheres, goals, updateSphere, updateGoal, addGoal, archiveGoal)
+      await pullSync(spheres, goals, updateSphere, updateGoal, addGoal, archiveGoal, addSphere)
     } catch (err) {
       console.error('sync error:', err)
     } finally {
