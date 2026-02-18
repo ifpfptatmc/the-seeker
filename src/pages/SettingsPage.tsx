@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Moon, Sun, Monitor, Palette, LogOut, Bell, Shield, HelpCircle, Brain, ChevronDown, ChevronRight, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react'
+import { Moon, Sun, Monitor, Palette, LogOut, Bell, Shield, HelpCircle, Brain, ChevronDown, ChevronRight, RefreshCw, CheckCircle, AlertCircle, BookOpen, Download } from 'lucide-react'
 import { Layout } from '../components/Layout'
 import { useStore } from '../store/useStore'
 import { signOut } from '../lib/supabase'
@@ -27,7 +27,7 @@ const AI_MODELS = [
 
 export function SettingsPage() {
   const navigate = useNavigate()
-  const { theme, accentColor, setTheme, setAccentColor, user, progress, preferredModel, setPreferredModel, spheres, goals, updateSphere, updateGoal, addGoal, archiveGoal, addSphere, setUser } = useStore()
+  const { theme, accentColor, setTheme, setAccentColor, user, progress, preferredModel, setPreferredModel, spheres, goals, updateSphere, updateGoal, addGoal, archiveGoal, addSphere, setUser, currentMethod } = useStore()
   const [showAIStats, setShowAIStats] = useState(false)
   const [aiStats, setAiStats] = useState<{ model: string; total_cost: number; total_requests: number; total_input_tokens: number; total_output_tokens: number }[]>([])
   const [isSyncing, setIsSyncing] = useState(false)
@@ -271,6 +271,30 @@ export function SettingsPage() {
             </div>
           )}
         </div>
+        
+        {/* Method Book Chapter */}
+        {currentMethod && (
+          <div className="card space-y-3">
+            <h3 className="font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
+              <BookOpen className="w-5 h-5" />
+              методика недели
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {currentMethod.title}
+            </p>
+            <a
+              href={`/books/${currentMethod.id}.epub`}
+              download={`${currentMethod.id}.epub`}
+              className="btn btn-secondary w-full flex items-center justify-center gap-2"
+            >
+              <Download className="w-4 h-4" />
+              скачать главу из книги (epub)
+            </a>
+            <p className="text-xs text-gray-400">
+              Крис Бейли «Мой продуктивный год» (2016)
+            </p>
+          </div>
+        )}
         
         {/* Appearance */}
         <div className="card space-y-4">
